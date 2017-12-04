@@ -1,0 +1,12 @@
+1-Integration of the two datasets
+2-Merging of features that can be merged
+3-Handle Missing Data
+4-Then perform preprocessing on that merged dataset
+5-Feature selection that what features needs to be fed into algo
+6-First we should try logistic regression
+7-That requires numeric features so convert categorical features into numeric features
+8-And also normalization needs to be done
+9-Then run logistic regression algo
+10-Need to evaluate accuracy precision recall fmeasure and roc curve
+11- if required accuracy achieved then proceed to next step otherwise repeat the process with some parameter changes in the same alogo or on different algo (Say Random Forrest)
+12- Then web form and web api needs to be built
