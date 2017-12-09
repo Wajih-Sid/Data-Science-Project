@@ -19,7 +19,7 @@ dir_paths = {
     }
 }
 
-fields_to_drop = ['EmployeeCount', 'Over18', 'EmployeeNumber', 'StandardHours']
+fields_to_drop = ['EmployeeCount', 'Over18', 'EmployeeNumber', 'StandardHours','DailyRate','HourlyRate']
 
 
 def LoadData(path):
@@ -48,7 +48,7 @@ def satisfaction_combine(result):
                                                      result['satisfaction_level_Combined'])
     result.satisfaction_level_Combined.fillna(result.JobSatisfaction, inplace=True)
 
-    fields_to_drop.extend(['Over18','EmployeeCount','satisfaction_level','JobSatisfaction','time_spend_company','YearsAtCompany','BusinessTravel','Gender','EducationField','MaritalStatus','OverTime','JobRole','EmployeeNumber','HourlyRate','DailyRate','StandardHours'])
+    fields_to_drop.extend(['satisfaction_level','JobSatisfaction'])
 
 
 def ConvertCategoricalFeaturesToNumerical(result_Combined):
@@ -91,6 +91,7 @@ def ConvertCategoricalFeaturesToNumerical(result_Combined):
     result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Research Director', 'JobRole'] = 7
     result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Human Resources', 'JobRole'] = 8
     result_Combined['JobRole_numerical'] = result_Combined['JobRole'].convert_objects(convert_numeric=True)
+    fields_to_drop.extend(['BusinessTravel','Gender','EducationField','MaritalStatus','OverTime','JobRole'])
 
 def years_at_company_combine(result):
     result['YearsAtCompanyCombied'] = result.time_spend_company.fillna(result.YearsAtCompany)
@@ -192,17 +193,14 @@ satisfaction_combine(result)
 years_at_company_combine(result)
 combine_attritions(result)
 incomes_combined(result)
-<<<<<<< HEAD
-<<<<<<< HEAD
 ConvertCategoricalFeaturesToNumerical(result)
-=======
 combine_departments(result)
 combine_promotion_last_5_years(result)
->>>>>>> 6a0e8fa719fcc6e6afe9bcc0b7c856b395830bfd
-=======
 combine_departments(result)
 combine_promotion_last_5_years(result)
->>>>>>> 6a0e8fa719fcc6e6afe9bcc0b7c856b395830bfd
+combine_departments(result)
+combine_promotion_last_5_years(result)
+
 
 
 
