@@ -196,10 +196,10 @@ incomes_combined(result)
 ConvertCategoricalFeaturesToNumerical(result)
 combine_departments(result)
 combine_promotion_last_5_years(result)
-combine_departments(result)
-combine_promotion_last_5_years(result)
-combine_departments(result)
-combine_promotion_last_5_years(result)
+#combine_departments(result)
+#combine_promotion_last_5_years(result)
+#combine_departments(result)
+#combine_promotion_last_5_years(result)
 
 
 
