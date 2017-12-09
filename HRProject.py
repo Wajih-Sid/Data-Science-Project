@@ -13,7 +13,7 @@ dir_paths = {
         'df1': 'F:\\HRProject\\HR_IBM.csv',
         'df2': 'F:\\HRProject\\HR_comma_sep.csv'
     },
-    'wajih': {
+    'pwd': {
         'df1': os.getcwd() + '/HR_IBM.csv',
         'df2': os.getcwd() + '/organization.csv'
     }
@@ -48,9 +48,49 @@ def satisfaction_combine(result):
                                                      result['satisfaction_level_Combined'])
     result.satisfaction_level_Combined.fillna(result.JobSatisfaction, inplace=True)
 
-    fields_to_drop.extend(['satisfaction_level', 'JobSatisfaction'])
+    fields_to_drop.extend(['Over18','EmployeeCount','satisfaction_level','JobSatisfaction','time_spend_company','YearsAtCompany','BusinessTravel','Gender','EducationField','MaritalStatus','OverTime','JobRole','EmployeeNumber','HourlyRate','DailyRate','StandardHours'])
 
 
+def ConvertCategoricalFeaturesToNumerical(result_Combined):
+    result_Combined['BusinessTravel_numerical'] = result_Combined.loc[result_Combined.BusinessTravel == 'Travel_Rarely', 'BusinessTravel'] = 1
+    result_Combined['BusinessTravel_numerical'] = result_Combined.loc[result_Combined.BusinessTravel == 'Travel_Frequently', 'BusinessTravel'] = 2
+    result_Combined['BusinessTravel_numerical'] = result_Combined.loc[result_Combined.BusinessTravel == 'Non-Travel', 'BusinessTravel'] = 0
+    result_Combined['BusinessTravel_numerical'] = result_Combined['BusinessTravel'].convert_objects(convert_numeric=True)
+    
+    
+    result_Combined['Gender_numerical'] = result_Combined.loc[result_Combined.Gender == 'Female', 'Gender'] = 0
+    result_Combined['Gender_numerical'] = result_Combined.loc[result_Combined.Gender == 'Male', 'Gender'] = 1
+    result_Combined['Gender_numerical'] = result_Combined['Gender'].convert_objects(convert_numeric=True)
+    
+    
+    result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Life Sciences', 'EducationField'] = 0
+    result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Other', 'EducationField'] = 1
+    result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Medical', 'EducationField'] = 2
+    result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Marketing', 'EducationField'] = 3
+    result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Technical Degree', 'EducationField'] = 4
+    result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Human Resources', 'EducationField'] = 5
+    result_Combined['EducationField_numerical'] = result_Combined['EducationField'].convert_objects(convert_numeric=True)
+    
+    result_Combined['MaritalStatus_numerical'] = result_Combined.loc[result_Combined.MaritalStatus == 'Single', 'MaritalStatus'] = 0
+    result_Combined['MaritalStatus_numerical'] = result_Combined.loc[result_Combined.MaritalStatus == 'Married', 'MaritalStatus'] = 1
+    result_Combined['MaritalStatus_numerical'] = result_Combined.loc[result_Combined.MaritalStatus == 'Divorced', 'MaritalStatus'] = 2
+    result_Combined['MaritalStatus_numerical'] = result_Combined['MaritalStatus'].convert_objects(convert_numeric=True)
+    
+    
+    result_Combined['OverTime_numerical'] = result_Combined.loc[result_Combined.OverTime == 'No', 'OverTime'] = 0
+    result_Combined['OverTime_numerical'] = result_Combined.loc[result_Combined.OverTime == 'Yes', 'OverTime'] = 1
+    result_Combined['OverTime_numerical'] = result_Combined['OverTime'].convert_objects(convert_numeric=True)
+    
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Sales Executive', 'JobRole'] = 0
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Research Scientist', 'JobRole'] = 1
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Laboratory Technician', 'JobRole'] = 2
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Manufacturing Director', 'JobRole'] = 3
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Healthcare Representative', 'JobRole'] = 4
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Manager', 'JobRole'] = 5
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Sales Representative', 'JobRole'] = 6
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Research Director', 'JobRole'] = 7
+    result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Human Resources', 'JobRole'] = 8
+    result_Combined['JobRole_numerical'] = result_Combined['JobRole'].convert_objects(convert_numeric=True)
 
 def years_at_company_combine(result):
     result['YearsAtCompanyCombied'] = result.time_spend_company.fillna(result.YearsAtCompany)
@@ -106,8 +146,41 @@ def incomes_combined(result):
 
     fields_to_drop.extend(['salary', 'MonthlyIncome'])
 
+def combine_departments(result):
+    def mapper(val):
+        if val == 'Sales':
+            return val.lower()
+        elif val == 'Research & Development':
+            return 'RandD'
+        elif val == 'Human Resources':
+            return 'hr'
+        else:
+            return val
+
+    result['department_combined'] = [mapper(x) for x in result['Department'].values]
+    result.department_combined.fillna(result.sales, inplace=True)
+    dept_map = {'sales':1, 'RandD':2, 'hr':3, 'accounting':4, 'technical':5, 'support':6,
+       'management':7, 'IT':8, 'product_mng':9, 'marketing':10}
+    result['department_combined'] = [dept_map[x] for x in result['department_combined'].values]
+    
+    result.department_combined = result.department_combined.astype(int)
+    fields_to_drop.extend(['Department', 'sales'])
+
+
+def combine_promotion_last_5_years(result):
+    def mapper(val):
+        if val <= 5:
+            return 1
+        else:
+            return 0
+
+    result['promotion_5_year_combined'] = [mapper(x) for x in result['YearsSinceLastPromotion'].values]
+    result.promotion_5_year_combined.fillna(result.promotion_last_5years, inplace=True)
+    result.promotion_5_year_combined = result.promotion_5_year_combined.astype(int)
+    fields_to_drop.extend(['YearsSinceLastPromotion', 'promotion_last_5years'])
+
 # Person using this file goes here for path, replace name with yours
-user = dir_paths['wajih']
+user = dir_paths['pwd']
 
 df1 = LoadData(user['df1'])
 df2 = LoadData(user['df2'])
@@ -119,7 +192,20 @@ satisfaction_combine(result)
 years_at_company_combine(result)
 combine_attritions(result)
 incomes_combined(result)
+<<<<<<< HEAD
+<<<<<<< HEAD
+ConvertCategoricalFeaturesToNumerical(result)
+=======
+combine_departments(result)
+combine_promotion_last_5_years(result)
+>>>>>>> 6a0e8fa719fcc6e6afe9bcc0b7c856b395830bfd
+=======
+combine_departments(result)
+combine_promotion_last_5_years(result)
+>>>>>>> 6a0e8fa719fcc6e6afe9bcc0b7c856b395830bfd
 
 
 
 result_Combined = result.drop(fields_to_drop,axis=1)
+
+MergeDataSetToCsv(os.getcwd() + '/MergedDF.csv', result_Combined)
