@@ -13,7 +13,7 @@ dir_paths = {
         'df1': 'F:\\HRProject\\HR_IBM.csv',
         'df2': 'F:\\HRProject\\HR_comma_sep.csv'
     },
-    'wajih': {
+    'pwd': {
         'df1': os.getcwd() + '/HR_IBM.csv',
         'df2': os.getcwd() + '/organization.csv'
     }
@@ -106,8 +106,41 @@ def incomes_combined(result):
 
     fields_to_drop.extend(['salary', 'MonthlyIncome'])
 
+def combine_departments(result):
+    def mapper(val):
+        if val == 'Sales':
+            return val.lower()
+        elif val == 'Research & Development':
+            return 'RandD'
+        elif val == 'Human Resources':
+            return 'hr'
+        else:
+            return val
+
+    result['department_combined'] = [mapper(x) for x in result['Department'].values]
+    result.department_combined.fillna(result.sales, inplace=True)
+    dept_map = {'sales':1, 'RandD':2, 'hr':3, 'accounting':4, 'technical':5, 'support':6,
+       'management':7, 'IT':8, 'product_mng':9, 'marketing':10}
+    result['department_combined'] = [dept_map[x] for x in result['department_combined'].values]
+    
+    result.department_combined = result.department_combined.astype(int)
+    fields_to_drop.extend(['Department', 'sales'])
+
+
+def combine_promotion_last_5_years(result):
+    def mapper(val):
+        if val <= 5:
+            return 1
+        else:
+            return 0
+
+    result['promotion_5_year_combined'] = [mapper(x) for x in result['YearsSinceLastPromotion'].values]
+    result.promotion_5_year_combined.fillna(result.promotion_last_5years, inplace=True)
+    result.promotion_5_year_combined = result.promotion_5_year_combined.astype(int)
+    fields_to_drop.extend(['YearsSinceLastPromotion', 'promotion_last_5years'])
+
 # Person using this file goes here for path, replace name with yours
-user = dir_paths['wajih']
+user = dir_paths['pwd']
 
 df1 = LoadData(user['df1'])
 df2 = LoadData(user['df2'])
@@ -119,7 +152,11 @@ satisfaction_combine(result)
 years_at_company_combine(result)
 combine_attritions(result)
 incomes_combined(result)
+combine_departments(result)
+combine_promotion_last_5_years(result)
 
 
 
 result_Combined = result.drop(fields_to_drop,axis=1)
+
+MergeDataSetToCsv(os.getcwd() + '/MergedDF.csv', result_Combined)
