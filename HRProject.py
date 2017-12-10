@@ -7,6 +7,8 @@ Created on Sat Nov 18 15:03:01 2017
 import os
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report,confusion_matrix
 
 dir_paths = {
     'mohsin': {
@@ -19,7 +21,7 @@ dir_paths = {
     }
 }
 
-fields_to_drop = ['EmployeeCount', 'Over18', 'EmployeeNumber', 'StandardHours','DailyRate','HourlyRate']
+fields_to_drop = ['EmployeeCount', 'Over18', 'EmployeeNumber', 'StandardHours','DailyRate','HourlyRate','Education']
 
 
 def LoadData(path):
@@ -147,6 +149,32 @@ def incomes_combined(result):
 
     fields_to_drop.extend(['salary', 'MonthlyIncome'])
 
+def BinMonthlyRate(result):
+    
+    def BinMapper(x):
+        if x <= first_range:
+            return 0
+        elif x >= first_range and x < second_range:
+            return 1
+        elif x >= second_range and x < third_range:
+            return 2
+        elif x >= third_range and x < fourth_range:
+            return 3
+        elif x >= fourth_range:
+            return 4
+        else:
+            return x
+    
+    a = np.array(result['MonthlyRate'])
+    first_range = np.nanpercentile(a, 20)
+    second_range = np.nanpercentile(a, 40)
+    third_range = np.nanpercentile(a, 60)
+    fourth_range = np.nanpercentile(a, 80)
+    
+    result['MonthtlyRateNormalized'] = [BinMapper(x) for x in result.MonthlyRate]
+    fields_to_drop.extend(['MonthlyRate'])
+    
+    
 def combine_departments(result):
     def mapper(val):
         if val == 'Sales':
@@ -180,6 +208,40 @@ def combine_promotion_last_5_years(result):
     result.promotion_5_year_combined = result.promotion_5_year_combined.astype(int)
     fields_to_drop.extend(['YearsSinceLastPromotion', 'promotion_last_5years'])
 
+def MissingDataTreatment(result):
+    for i in result.columns:
+        med = np.nanmedian(result[i])
+        result[i].fillna(med,inplace=True)
+    return result
+
+def splitdata(result_Combined):
+    from sklearn.cross_validation import train_test_split
+    input_x = ['Age', 'DistanceFromHome', 'EnvironmentSatisfaction',
+       'JobInvolvement', 'JobLevel', 'NumCompaniesWorked',
+       'PercentSalaryHike', 'PerformanceRating', 'RelationshipSatisfaction',
+       'StockOptionLevel', 'TotalWorkingYears', 'TrainingTimesLastYear',
+       'WorkLifeBalance', 'Work_accident', 'YearsInCurrentRole',
+       'YearsWithCurrManager', 'average_montly_hours', 'last_evaluation',
+       'number_project', 'satisfaction_level_Combined',
+       'YearsAtCompanyCombied', 'salary_combined',
+       'BusinessTravel_numerical', 'Gender_numerical',
+       'EducationField_numerical', 'MaritalStatus_numerical',
+       'OverTime_numerical', 'JobRole_numerical', 'department_combined',
+       'promotion_5_year_combined', 'MonthtlyRateNormalized']
+    X_train, X_test, y_train, y_test = train_test_split( result_Combined[input_x], result_Combined['attrition_combined'], test_size=0.33, random_state=42)
+    return X_train, X_test, y_train, y_test
+
+def TrainLogisticRegression(X_train, y_train):
+    logmodel = LogisticRegression()
+    logmodel.fit(X_train,y_train)
+    return logmodel
+    
+def ScoreLogisticRegression(X_test, y_test,logmodel):
+    predictions = logmodel.predict(X_test)
+    report = classification_report(y_test,predictions)
+    confuionMatrix = confusion_matrix(y_test,predictions)
+    return predictions,report,confuionMatrix
+    
 # Person using this file goes here for path, replace name with yours
 user = dir_paths['pwd']
 
@@ -196,6 +258,7 @@ incomes_combined(result)
 ConvertCategoricalFeaturesToNumerical(result)
 combine_departments(result)
 combine_promotion_last_5_years(result)
+BinMonthlyRate(result)
 #combine_departments(result)
 #combine_promotion_last_5_years(result)
 #combine_departments(result)
@@ -205,5 +268,15 @@ combine_promotion_last_5_years(result)
 
 
 result_Combined = result.drop(fields_to_drop,axis=1)
+result_Combined = MissingDataTreatment(result_Combined)
+X_train, X_test, y_train, y_test = splitdata(result_Combined)
+logmodel = TrainLogisticRegression(X_train, y_train)
+predictions,report,confuionMatrix = ScoreLogisticRegression(X_test, y_test,logmodel)
+
+y_complete = X_test
+y_complete['actual'] = y_test
+y_complete['predicted'] = predictions
+
+MergeDataSetToCsv(os.getcwd() + '/PredictedDF.csv',y_complete)
 
 MergeDataSetToCsv(os.getcwd() + '/MergedDF.csv', result_Combined)
