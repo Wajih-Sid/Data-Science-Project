@@ -10,7 +10,8 @@ import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report,confusion_matrix
 from sklearn.externals import joblib
-
+from sklearn import tree
+from sklearn.ensemble import RandomForestClassifier
 try:
     from sklearn.model_selection import train_test_split
 except:
@@ -233,7 +234,9 @@ def MissingDataTreatment(result):
     return result
 
 def splitdata(result_Combined):
-    X_train, X_test, y_train, y_test = train_test_split( result_Combined[cols_to_use], result_Combined['attrition_combined'], test_size=0.33, random_state=42)
+    input_x = list(result_Combined.columns)
+    input_x.remove('attrition_combined')
+    X_train, X_test, y_train, y_test = train_test_split( result_Combined[input_x], result_Combined['attrition_combined'], test_size=0.33, random_state=42)
     return X_train, X_test, y_train, y_test
 
 def TrainLogisticRegression(X_train, y_train):
@@ -257,7 +260,28 @@ def predict_from_persistedmodel(val):
     clf = load_persisted_model('logistic.pkl')
     churn =  clf.predict(val)
     return churn
+    
+def TrainDecissionTree(X_train, y_train):
+    clf = tree.DecisionTreeClassifier()
+    clf = clf.fit(X_train, y_train)
+    return clf
 
+def ScoreDecissionTree(X_test, y_test,clf):
+    predictions = clf.predict(X_test)
+    report = classification_report(y_test,predictions)
+    confuionMatrix = confusion_matrix(y_test,predictions)
+    return predictions,report,confuionMatrix
+
+def TrainRandomForest(X_train, y_train):
+    clf = RandomForestClassifier(max_depth=2, random_state=0)
+    clf = clf.fit(X_train, y_train)
+    return clf
+
+def ScoreRandomForest(X_test, y_test,clf):
+    predictions = clf.predict(X_test)
+    report = classification_report(y_test,predictions)
+    confuionMatrix = confusion_matrix(y_test,predictions)
+    return predictions,report,confuionMatrix
 
 # Person using this file goes here for path, replace name with yours
 user = dir_paths['pwd']
@@ -276,19 +300,19 @@ ConvertCategoricalFeaturesToNumerical(result)
 combine_departments(result)
 combine_promotion_last_5_years(result)
 BinMonthlyRate(result)
-#combine_departments(result)
-#combine_promotion_last_5_years(result)
-#combine_departments(result)
-#combine_promotion_last_5_years(result)
-
-
-
 
 result_Combined = result.drop(fields_to_drop,axis=1)
 result_Combined = MissingDataTreatment(result_Combined)
 X_train, X_test, y_train, y_test = splitdata(result_Combined)
 logmodel = TrainLogisticRegression(X_train, y_train)
 predictions,report,confuionMatrix = ScoreLogisticRegression(X_test, y_test,logmodel)
+decission_tree_model = TrainDecissionTree(X_train, y_train)
+predictions_dt,report_dt,confuionMatrix_dt = ScoreDecissionTree(X_test, y_test, decission_tree_model)
+random_forest_model = TrainRandomForest(X_train, y_train)
+predictions_rf,report_rf,confuionMatrix_rf = ScoreRandomForest(X_test, y_test, random_forest_model)
+
+    
+
 
 
 
