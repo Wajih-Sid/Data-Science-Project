@@ -11,6 +11,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report,confusion_matrix
 from sklearn.externals import joblib
 from sklearn import tree
+from sklearn.metrics import roc_auc_score
+from sklearn import metrics
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 try:
     from sklearn.model_selection import train_test_split
