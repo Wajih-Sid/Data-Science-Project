@@ -1,0 +1,2 @@
+['EmployeeCount', 'Over18', 'EmployeeNumber', 'StandardHours'] -> Same value no variance
+
