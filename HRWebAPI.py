@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec 11 12:27:00 2017
-
-@author: mohsin.aslam
-"""
-
 
 # A very simple Flask Hello World app for you to get started with...
 
@@ -237,14 +230,15 @@ def predicting():
     result = pd.DataFrame(json_)
     satisfaction_combine(result)
     years_at_company_combine(result)
-    combine_attritions(result)
+    #combine_attritions(result)
     incomes_combined(result)
     ConvertCategoricalFeaturesToNumerical(result)
     combine_departments(result)
     combine_promotion_last_5_years(result)
     BinMonthlyRate(result)
-    fields_to_drop.extend(['attrition_combined'])
+    #fields_to_drop.extend(['attrition_combined'])
     result_Combined = result.drop(fields_to_drop,axis=1)
+    clf = joblib.load('/home/mohsinaslam/mysite/logistic.pkl')
     prediction = clf.predict(result_Combined)
     #return jsonify({'prediction': list(prediction)})
     print(result_Combined.head())
@@ -257,14 +251,15 @@ def test():
     result = pd.DataFrame(json_)
     print (result.head())
     return jsonify({'prediction': 'test'})
-    
+
 @app.route('/alive', methods = ['GET'])
 def alive():
     return jsonify({'prediction': 'About to come'})
 
 
 if __name__ == '__main__':
-    clf = joblib.load('logistic.pkl')
-    model_columns = joblib.load('logistic.pkl')
+    #clf = joblib.load('/home/mohsinaslam/mysite/logistic.pkl')
+    #model_columns = joblib.load('./logistic.pkl')
     app.run(host='0.0.0.0')
+
 
