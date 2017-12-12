@@ -11,14 +11,10 @@ Data Science Project
 
 The APIs for this project are located in the folder apiserver/HRProject.py
 
-- Goto directory apiserver
-- Run ```python manage.py runserver```
-  - Should give the below response:
-      <pre><code>Django version 1.11.8, using settings 'apiserver.settings'
-       Starting development server at http://127.0.0.1:8000/
-       Quit the server with CONTROL-C.</code></pre>
+The API server runs on Flask with the url:
+<pre><code>"http://mohsinaslam.pythonanywhere.com/predict"</code></pre>
 
-- All Set!
+- Run a POST request from any REST client to test.
 
 
 ## Angular Website
