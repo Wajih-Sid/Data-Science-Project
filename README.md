@@ -7,9 +7,9 @@ Data Science Project
 
 
 
-## API Server
+## API
 
-The API server for this project is based on Django, following are the steps to start it.
+The APIs for this project are located in the folder apiserver/HRProject.py
 
 - Goto directory apiserver
 - Run ```python manage.py runserver```
