@@ -280,12 +280,24 @@ class PersistentModel(object):
     def load_persisted_model(self, model_name):
         return joblib.load(model_name)
 
+    def map_all(self, result):
+        satisfaction_combine(result)
+        years_at_company_combine(result)
+        combine_attritions(result)
+        incomes_combined(result)
+        ConvertCategoricalFeaturesToNumerical(result)
+        combine_departments(result)
+        combine_promotion_last_5_years(result)
+        BinMonthlyRate(result)
+
+
     def predict_from_persistedmodel(self, val):
 
         if not isinstance(val, dict):
             return "Invalid data."
         try:
-            val = pd.DataFrame(val.items(), columns=val.keys())
+            val = pd.DataFrame([val], columns=val.keys())
+            self.map_all(val)
         except:
             print "Failed to parse data."
 
@@ -325,10 +337,10 @@ predictions_rf,report_rf,confuionMatrix_rf = ScoreRandomForest(X_test, y_test, r
     
 
 
-
-
 # Persist model in file
-# create_persisted_model(logmodel, 'logistic.pkl')
+pers_model = PersistentModel()
+
+pers_model.create_persisted_model(logmodel, 'logistic.pkl')
 
 # Predict churn of employees of age > 40 from persisted model
 # predict_from_persistedmodel(result_Combined[result_Combined.Age > 40.0][cols_to_use])
