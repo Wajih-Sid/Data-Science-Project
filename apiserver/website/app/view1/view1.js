@@ -82,7 +82,7 @@ angular.module('myApp.view1', ['ngRoute'])
         'name': 'JobInvolvement'
       },
       {
-        'type': 'options',
+        'type': 'dropdown',
         'options': ['Single', 'Married', 'Divorced'],
         'placeholder': 'Marital Status',
         'name': 'MaritalStatus'
@@ -246,10 +246,12 @@ angular.module('myApp.view1', ['ngRoute'])
 
 
 	function parseData(data) {
+	    var dataCopy = angular.copy(data);
+
         angular.forEach(data, function (val, key) {
-            data[key] = [val];
+            dataCopy[key] = [val];
         });
-		return data;
+		return dataCopy;
 	}
 
 	var API_URL = 'http://localhost:8000/get_churn/';
@@ -265,9 +267,12 @@ angular.module('myApp.view1', ['ngRoute'])
 		    return
 		}
 
+		var prediction_map = {0: 'Employee will not Leave', 1: 'Employee will Leave.'}
+
 		$http.post(API_URL, data).then(function (response) {
-			if (!!response) {
-				alert(response);
+			if (!!response && response.data) {
+			    var prediction = +response.data.prediction;
+				alert(prediction_map[prediction]);
 			}
 		}, function (error) {
 			console.log(error);
