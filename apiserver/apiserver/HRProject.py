@@ -275,10 +275,10 @@ def ScoreRandomForest(X_test, y_test,clf):
     confuionMatrix = confusion_matrix(y_test,predictions)
     return predictions,report,confuionMatrix
 
-def CreateROCCurve(y_test,predictions):
+def CreateROCCurve(y_test,predictions, classifier_name):
     fpr, tpr, thresholds = metrics.roc_curve(y_test, predictions)
     roc_auc = metrics.auc(fpr, tpr)
-    plt.title('Receiver Operating Characteristic')
+    plt.title('Receiver Operating Characteristic for ' + classifier_name)
     plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % roc_auc)
     plt.legend(loc = 'lower right')
     plt.plot([0, 1], [0, 1],'r--')
@@ -323,7 +323,7 @@ class PersistentModel(object):
 
 
 # Person using this file goes here for path, replace name with yours
-user = dir_paths['mohsin']
+user = dir_paths['pwd']
 
 df1 = LoadData(user['df1'])
 df2 = LoadData(user['df2'])
@@ -349,18 +349,17 @@ decission_tree_model = TrainDecissionTree(X_train, y_train)
 predictions_dt,report_dt,confuionMatrix_dt = ScoreDecissionTree(X_test, y_test, decission_tree_model)
 random_forest_model = TrainRandomForest(X_train, y_train)
 predictions_rf,report_rf,confuionMatrix_rf = ScoreRandomForest(X_test, y_test, random_forest_model)
-CreateROCCurve(y_test,predictions)
-CreateROCCurve(y_test,predictions_dt)
-CreateROCCurve(y_test,predictions_rf)    
+CreateROCCurve(y_test,predictions, 'Logistic Regression')
+CreateROCCurve(y_test,predictions_dt, 'Decision Tree')
+CreateROCCurve(y_test,predictions_rf, 'Random Forest')
 
 
 # Persist model in file
 pers_model = PersistentModel()
 
 pers_model.create_persisted_model(logmodel, 'logistic.pkl')
+predictions = pers_model.predict_from_persistedmodel(result_Combined[result_Combined.Age > 40.0][cols_to_use])
 
-# Predict churn of employees of age > 40 from persisted model
-# predict_from_persistedmodel(result_Combined[result_Combined.Age > 40.0][cols_to_use])
 
 y_complete = X_test
 y_complete['actual'] = y_test
