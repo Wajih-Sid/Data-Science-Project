@@ -260,6 +260,7 @@ angular.module('myApp.view1', ['ngRoute'])
 
 
 	$scope.formSubmit = function () {
+	    $scope.isLoading = true;
 		var data = parseData($scope.model);
 
 		if (Object.keys(data).length !== $scope.formFields.length) {
@@ -276,6 +277,8 @@ angular.module('myApp.view1', ['ngRoute'])
 			}
 		}, function (error) {
 			console.log(error);
+		})['finally'](function () {
+		    $scope.isLoading = false;
 		});
 	};
 
