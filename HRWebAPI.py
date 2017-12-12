@@ -1,35 +1,32 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Nov 18 15:03:01 2017
+Created on Mon Dec 11 12:27:00 2017
 
-@author: Mohsin Aslam
+@author: mohsin.aslam
 """
+
+
+# A very simple Flask Hello World app for you to get started with...
+
+from flask import Flask, jsonify
+#from flask_restful import Resource, Api
+from flask import request
+from flask import json
+#import getCommon
+#import setCommon
+import pandas as pd
+from sklearn.externals import joblib
 import os
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report,confusion_matrix
-from sklearn.externals import joblib
 from sklearn import tree
-from sklearn.metrics import roc_auc_score
-from sklearn import metrics
-import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier
 try:
     from sklearn.model_selection import train_test_split
 except:
     from sklearn.cross_validation import train_test_split
-
-dir_paths = {
-    'mohsin': {
-        'df1': 'F:\\HRProject\\HR_IBM.csv',
-        'df2': 'F:\\HRProject\\HR_comma_sep.csv'
-    },
-    'pwd': {
-        'df1': os.getcwd() + '/HR_IBM.csv',
-        'df2': os.getcwd() + '/organization.csv'
-    }
-}
 
 fields_to_drop = ['EmployeeCount', 'Over18', 'EmployeeNumber', 'StandardHours','DailyRate','HourlyRate','Education']
 
@@ -48,14 +45,14 @@ cols_to_use = ['Age', 'DistanceFromHome', 'EnvironmentSatisfaction',
 
 def LoadData(path):
     return pd.read_csv(path)
-    
+
 def MergeDataSets(df1,df2):
     result = df1.append(df2, ignore_index=True)
     return result
 
 def combined_dfs(df1, df2):
     return df1.append(df2, ignore_index=True)
-    
+
 def MergeDataSetToCsv(path,df):
     df.to_csv(path,sep = ',',encoding='utf-8')
     return
@@ -80,13 +77,13 @@ def ConvertCategoricalFeaturesToNumerical(result_Combined):
     result_Combined['BusinessTravel_numerical'] = result_Combined.loc[result_Combined.BusinessTravel == 'Travel_Frequently', 'BusinessTravel'] = 2
     result_Combined['BusinessTravel_numerical'] = result_Combined.loc[result_Combined.BusinessTravel == 'Non-Travel', 'BusinessTravel'] = 0
     result_Combined['BusinessTravel_numerical'] = result_Combined['BusinessTravel'].convert_objects(convert_numeric=True)
-    
-    
+
+
     result_Combined['Gender_numerical'] = result_Combined.loc[result_Combined.Gender == 'Female', 'Gender'] = 0
     result_Combined['Gender_numerical'] = result_Combined.loc[result_Combined.Gender == 'Male', 'Gender'] = 1
     result_Combined['Gender_numerical'] = result_Combined['Gender'].convert_objects(convert_numeric=True)
-    
-    
+
+
     result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Life Sciences', 'EducationField'] = 0
     result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Other', 'EducationField'] = 1
     result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Medical', 'EducationField'] = 2
@@ -94,17 +91,17 @@ def ConvertCategoricalFeaturesToNumerical(result_Combined):
     result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Technical Degree', 'EducationField'] = 4
     result_Combined['EducationField_numerical'] = result_Combined.loc[result_Combined.EducationField == 'Human Resources', 'EducationField'] = 5
     result_Combined['EducationField_numerical'] = result_Combined['EducationField'].convert_objects(convert_numeric=True)
-    
+
     result_Combined['MaritalStatus_numerical'] = result_Combined.loc[result_Combined.MaritalStatus == 'Single', 'MaritalStatus'] = 0
     result_Combined['MaritalStatus_numerical'] = result_Combined.loc[result_Combined.MaritalStatus == 'Married', 'MaritalStatus'] = 1
     result_Combined['MaritalStatus_numerical'] = result_Combined.loc[result_Combined.MaritalStatus == 'Divorced', 'MaritalStatus'] = 2
     result_Combined['MaritalStatus_numerical'] = result_Combined['MaritalStatus'].convert_objects(convert_numeric=True)
-    
-    
+
+
     result_Combined['OverTime_numerical'] = result_Combined.loc[result_Combined.OverTime == 'No', 'OverTime'] = 0
     result_Combined['OverTime_numerical'] = result_Combined.loc[result_Combined.OverTime == 'Yes', 'OverTime'] = 1
     result_Combined['OverTime_numerical'] = result_Combined['OverTime'].convert_objects(convert_numeric=True)
-    
+
     result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Sales Executive', 'JobRole'] = 0
     result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Research Scientist', 'JobRole'] = 1
     result_Combined['JobRole_numerical'] = result_Combined.loc[result_Combined.JobRole == 'Laboratory Technician', 'JobRole'] = 2
@@ -172,7 +169,7 @@ def incomes_combined(result):
     fields_to_drop.extend(['salary', 'MonthlyIncome'])
 
 def BinMonthlyRate(result):
-    
+
     def BinMapper(x):
         if x <= first_range:
             return 0
@@ -186,17 +183,17 @@ def BinMonthlyRate(result):
             return 4
         else:
             return x
-    
+
     a = np.array(result['MonthlyRate'])
     first_range = np.nanpercentile(a, 20)
     second_range = np.nanpercentile(a, 40)
     third_range = np.nanpercentile(a, 60)
     fourth_range = np.nanpercentile(a, 80)
-    
+
     result['MonthtlyRateNormalized'] = [BinMapper(x) for x in result.MonthlyRate]
     fields_to_drop.extend(['MonthlyRate'])
-    
-    
+
+
 def combine_departments(result):
     def mapper(val):
         if val == 'Sales':
@@ -213,7 +210,7 @@ def combine_departments(result):
     dept_map = {'sales':1, 'RandD':2, 'hr':3, 'accounting':4, 'technical':5, 'support':6,
        'management':7, 'IT':8, 'product_mng':9, 'marketing':10}
     result['department_combined'] = [dept_map[x] for x in result['department_combined'].values]
-    
+
     result.department_combined = result.department_combined.astype(int)
     fields_to_drop.extend(['Department', 'sales'])
 
@@ -230,142 +227,44 @@ def combine_promotion_last_5_years(result):
     result.promotion_5_year_combined = result.promotion_5_year_combined.astype(int)
     fields_to_drop.extend(['YearsSinceLastPromotion', 'promotion_last_5years'])
 
-def MissingDataTreatment(result):
-    for i in result.columns:
-        med = np.nanmedian(result[i])
-        result[i].fillna(med,inplace=True)
-    return result
 
-def splitdata(result_Combined):
-    input_x = list(result_Combined.columns)
-    input_x.remove('attrition_combined')
-    X_train, X_test, y_train, y_test = train_test_split( result_Combined[input_x], result_Combined['attrition_combined'], test_size=0.33, random_state=42)
-    return X_train, X_test, y_train, y_test
+app = Flask(__name__)
+#api = Api(app)
 
-def TrainLogisticRegression(X_train, y_train):
-    logmodel = LogisticRegression()
-    logmodel.fit(X_train,y_train)
-    return logmodel
+@app.route('/predict', methods = ['POST'])
+def predicting():
+    json_ = request.json
+    result = pd.DataFrame(json_)
+    satisfaction_combine(result)
+    years_at_company_combine(result)
+    combine_attritions(result)
+    incomes_combined(result)
+    ConvertCategoricalFeaturesToNumerical(result)
+    combine_departments(result)
+    combine_promotion_last_5_years(result)
+    BinMonthlyRate(result)
+    fields_to_drop.extend(['attrition_combined'])
+    result_Combined = result.drop(fields_to_drop,axis=1)
+    prediction = clf.predict(result_Combined)
+    #return jsonify({'prediction': list(prediction)})
+    print(result_Combined.head())
+    print(prediction)
+    return jsonify({'prediction': str(prediction[0])})
+
+@app.route('/test', methods = ['POST'])
+def test():
+    json_ = request.json
+    result = pd.DataFrame(json_)
+    print (result.head())
+    return jsonify({'prediction': 'test'})
     
-def ScoreLogisticRegression(X_test, y_test,logmodel):
-    predictions = logmodel.predict(X_test)
-    report = classification_report(y_test,predictions)
-    confuionMatrix = confusion_matrix(y_test,predictions)
-    return predictions,report,confuionMatrix
-
-def TrainDecissionTree(X_train, y_train):
-    clf = tree.DecisionTreeClassifier()
-    clf = clf.fit(X_train, y_train)
-    return clf
-
-def ScoreDecissionTree(X_test, y_test,clf):
-    predictions = clf.predict(X_test)
-    report = classification_report(y_test,predictions)
-    confuionMatrix = confusion_matrix(y_test,predictions)
-    return predictions,report,confuionMatrix
-
-def TrainRandomForest(X_train, y_train):
-    clf = RandomForestClassifier(max_depth=2, random_state=0)
-    clf = clf.fit(X_train, y_train)
-    return clf
-
-def ScoreRandomForest(X_test, y_test,clf):
-    predictions = clf.predict(X_test)
-    report = classification_report(y_test,predictions)
-    confuionMatrix = confusion_matrix(y_test,predictions)
-    return predictions,report,confuionMatrix
-
-def CreateROCCurve(y_test,predictions):
-    fpr, tpr, thresholds = metrics.roc_curve(y_test, predictions)
-    roc_auc = metrics.auc(fpr, tpr)
-    plt.title('Receiver Operating Characteristic')
-    plt.plot(fpr, tpr, 'b', label = 'AUC = %0.2f' % roc_auc)
-    plt.legend(loc = 'lower right')
-    plt.plot([0, 1], [0, 1],'r--')
-    plt.xlim([0, 1])
-    plt.ylim([0, 1])
-    plt.ylabel('True Positive Rate')
-    plt.xlabel('False Positive Rate')
-    plt.show()
-    
-
-class PersistentModel(object):
-    def create_persisted_model(self, clf, filename):
-        joblib.dump(clf, filename)
-
-    def load_persisted_model(self, model_name):
-        return joblib.load(model_name)
-
-    def map_all(self, result):
-        satisfaction_combine(result)
-        years_at_company_combine(result)
-        combine_attritions(result)
-        incomes_combined(result)
-        ConvertCategoricalFeaturesToNumerical(result)
-        combine_departments(result)
-        combine_promotion_last_5_years(result)
-        BinMonthlyRate(result)
+@app.route('/alive', methods = ['GET'])
+def alive():
+    return jsonify({'prediction': 'About to come'})
 
 
-    def predict_from_persistedmodel(self, val):
+if __name__ == '__main__':
+    clf = joblib.load('logistic.pkl')
+    model_columns = joblib.load('logistic.pkl')
+    app.run(host='0.0.0.0')
 
-        if not isinstance(val, dict):
-            return "Invalid data."
-        try:
-            val = pd.DataFrame([val], columns=val.keys())
-            self.map_all(val)
-        except:
-            print ("Failed to parse data.")
-
-        clf = self.load_persisted_model('../logistic.pkl')
-        churn = clf.predict(val)
-        return churn
-
-
-# Person using this file goes here for path, replace name with yours
-user = dir_paths['mohsin']
-
-df1 = LoadData(user['df1'])
-df2 = LoadData(user['df2'])
-
-result = combined_dfs(df1, df2)
-
-
-satisfaction_combine(result)
-years_at_company_combine(result)
-combine_attritions(result)
-incomes_combined(result)
-ConvertCategoricalFeaturesToNumerical(result)
-combine_departments(result)
-combine_promotion_last_5_years(result)
-BinMonthlyRate(result)
-
-result_Combined = result.drop(fields_to_drop,axis=1)
-result_Combined = MissingDataTreatment(result_Combined)
-X_train, X_test, y_train, y_test = splitdata(result_Combined)
-logmodel = TrainLogisticRegression(X_train, y_train)
-predictions,report,confuionMatrix = ScoreLogisticRegression(X_test, y_test,logmodel)
-decission_tree_model = TrainDecissionTree(X_train, y_train)
-predictions_dt,report_dt,confuionMatrix_dt = ScoreDecissionTree(X_test, y_test, decission_tree_model)
-random_forest_model = TrainRandomForest(X_train, y_train)
-predictions_rf,report_rf,confuionMatrix_rf = ScoreRandomForest(X_test, y_test, random_forest_model)
-CreateROCCurve(y_test,predictions)
-CreateROCCurve(y_test,predictions_dt)
-CreateROCCurve(y_test,predictions_rf)    
-
-
-# Persist model in file
-pers_model = PersistentModel()
-
-pers_model.create_persisted_model(logmodel, 'logistic.pkl')
-
-# Predict churn of employees of age > 40 from persisted model
-# predict_from_persistedmodel(result_Combined[result_Combined.Age > 40.0][cols_to_use])
-
-y_complete = X_test
-y_complete['actual'] = y_test
-y_complete['predicted'] = predictions
-
-MergeDataSetToCsv(os.getcwd() + '/PredictedDF.csv',y_complete)
-
-MergeDataSetToCsv(os.getcwd() + '/MergedDF.csv', result_Combined)
