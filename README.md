@@ -1,5 +1,5 @@
 # Data-Science-Project
-Data Science Project 
+Data Sets used from Kaggle
 
 - https://www.kaggle.com/ludobenistant/hr-analytics-1/data
 
