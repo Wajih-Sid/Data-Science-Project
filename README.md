@@ -29,7 +29,7 @@ The website is built on Angular 1.5 and requires node, npm dependancies
 - Run `npm start`
 - Should give the following response:
     <pre><code>
-        > angular-seed@0.0.0 start /home/wajih/PycharmProjects/Data-Science-Project/website
+        > angular-seed@0.0.0 start /home/wajih/PycharmProjects/Data-Science-Project/apiserver/website
         > http-server -a localhost -p 8080 -c-1 ./app
          Starting up http-server, serving ./app
          Available on: http://localhost:8080
