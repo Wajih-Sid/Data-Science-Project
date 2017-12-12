@@ -1,0 +1,18 @@
+<form>
+  <div class="form-row">
+    <div class="form-group col-md-12">
+
+    <div ng-repeat="field in formFields" class="col-md-12">
+    	<label>{{field.placeholder}} </label>
+
+        <select class="form-control" ng-if="field.type == 'dropdown'" ng-model="model[field.name]" ng-options="x for x in field.options">
+        </select>
+
+
+    	<input ng-if="field.type !== 'dropdown'" type="{{field.type}}" class="form-control" ng-model="model[field.name]" placeholder="{{field.placeholder}}">
+    </div>	
+
+  <button type="submit" class="btn btn-primary" ng-click="formSubmit()">Sign in</button>
+    </div>
+  </div>
+</form>
