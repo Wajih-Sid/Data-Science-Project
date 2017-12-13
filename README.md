@@ -5,7 +5,10 @@ Data Sets used from Kaggle
 
 - https://www.kaggle.com/pavansubhasht/ibm-hr-analytics-attrition-dataset/data
 
-
+# Authors:
+Wajih Siddiqui - 15153
+Mohsin Aslam - 15157
+Mudassir Baig - 15164
 
 ## API
 
