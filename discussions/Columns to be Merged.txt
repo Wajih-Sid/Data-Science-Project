@@ -1,0 +1,8 @@
+left --- attrition (0,1) 
+sales --- Department (hr r&D sales) 
+salary --- MonthlyIncome ( bin into 3 --> high low medium 0,1,2)
+promotion_last_5years --- YearsSinceLastPromotion ( less than 5 --> 1 and greater than 5 --> 0)
+Satisfaction_level (0.01 - 0.25 -->1 0.26-0.5 --> 2 0.51-0.75 --> 3 0.76-1 --> 4) ---- JobSatisfaction
+Time_spend_company --- YearsAtCompany
+
+ 
